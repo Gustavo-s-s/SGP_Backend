@@ -1,0 +1,56 @@
+image: maven:3.9.0-eclipse-temurin-21
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+  JAVA_HOME: "/usr/lib/jvm/java-21-openjdk"
+
+cache:
+  paths:
+    - .m2/repository
+
+stages:
+  - build
+  - test
+  - deploy
+
+before_script:
+  - echo "Starting CI/CD pipeline"
+
+build:
+  stage: build
+  script:
+    - mvn $MAVEN_CLI_OPTS clean package
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 hour
+  only:
+    - /^US-.*$/ 
+
+test:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+  only:
+    - /^US-.*$/  
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploy stage - configure your deployment steps here"
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only:
+    - /^US-.*$/  
+
+deploy_production:
+  stage: deploy
+  script:
+    - echo "Deploy to production environment"
+  environment:
+    name: production
+    url: https://example.com
+  only:
+    - tags
